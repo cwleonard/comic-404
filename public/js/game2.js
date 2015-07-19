@@ -16,6 +16,9 @@ var init = function () {
 		game.load.image('frog', 'images/frog.png');
 		game.load.spritesheet('ball', 'images/ball_animation.png', 45, 45);
 
+		game.load.tilemap('map', 'images/whatnot.json', null, Phaser.Tilemap.TILED_JSON);
+	    game.load.image('tiles', 'images/whatnot.png');
+
 	}
 	
 	var frog;
@@ -25,11 +28,21 @@ var init = function () {
 	var cursors;
 	var anim;
 	
+	var map;
+	var layer;
+
+	
 	function create() {
 
-		group = game.add.group();
-
 		game.stage.backgroundColor = "0x409d5a";
+		
+		map = game.add.tilemap('map');
+		map.addTilesetImage('whatnot2', 'tiles');;
+		layer = map.createLayer('layer1');
+		layer.resizeWorld();
+		
+		
+		group = game.add.group();
 
 		frog = group.create(200, 200, 'frog');
 		game.physics.enable(frog, Phaser.Physics.ARCADE);
@@ -56,6 +69,8 @@ var init = function () {
         
         group.sort();
 		
+        game.camera.follow(frog);
+        
 		cursors = game.input.keyboard.createCursorKeys();	
 
 	}
