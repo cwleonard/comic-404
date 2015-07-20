@@ -16,8 +16,8 @@ var init = function () {
 		game.load.image('frog', 'images/frog.png');
 		game.load.spritesheet('ball', 'images/ball_animation.png', 45, 45);
 
-		game.load.tilemap('map', 'images/whatnot.json', null, Phaser.Tilemap.TILED_JSON);
-	    game.load.image('tiles', 'images/whatnot.png');
+		game.load.tilemap('map', 'images/ground.json', null, Phaser.Tilemap.TILED_JSON);
+	    game.load.image('tiles', 'images/groundTiles.png');
 
 	}
 	
@@ -30,17 +30,15 @@ var init = function () {
 	
 	var map;
 	var layer;
-
 	
 	function create() {
 
 		game.stage.backgroundColor = "0x409d5a";
 		
 		map = game.add.tilemap('map');
-		map.addTilesetImage('whatnot2', 'tiles');;
-		layer = map.createLayer('layer1');
+		map.addTilesetImage('groundTiles', 'tiles');;
+		layer = map.createLayer('groundLayer');
 		layer.resizeWorld();
-		
 		
 		group = game.add.group();
 
