@@ -22,6 +22,7 @@ var init = function () {
 	}
 	
 	var frog;
+	var otherFrog;
 	var tree;
 	var ball;
 	var group;
@@ -50,6 +51,17 @@ var init = function () {
         frog.body.collideWorldBounds = true;
         frog.body.maxVelocity.set(200);
 
+        
+		otherFrog = group.create(600, 200, 'frog');
+		game.physics.enable(otherFrog, Phaser.Physics.ARCADE);
+		otherFrog.body.drag.set(300);
+		otherFrog.body.setSize(60, 25, 0, 42);
+		otherFrog.body.allowGravity = false;
+		otherFrog.body.collideWorldBounds = true;
+		otherFrog.body.maxVelocity.set(200);
+		otherFrog.chase = true;
+        
+        
 		tree = group.create(100, 300, 'tree2');
 		game.physics.enable(tree, Phaser.Physics.ARCADE);
 		tree.body.setSize(79, 25, 0, 98);
@@ -92,7 +104,15 @@ var init = function () {
 		}
 
 		group.sort('bottom', Phaser.Group.SORT_ASCENDING);
-		game.physics.arcade.collide(group);
+		game.physics.arcade.collide(group, group, function(o1, o2) {
+			if ((o1 === otherFrog && o2 === ball) || (o2 === otherFrog && o1 === ball)) {
+				otherFrog.chase = false;
+				otherFrog.kick = false;
+				setTimeout(function() {
+					otherFrog.chase = true;
+				}, 250);
+			}
+		});
 		
 		if (ball.body.velocity.x == 0 && ball.body.velocity.y == 0) {
 			anim.stop();
@@ -104,6 +124,27 @@ var init = function () {
 			} else {
 				anim.play(speed, true);
 			}
+		}
+		
+		if (otherFrog.chase) {
+			
+			var targetX, targetY;
+			
+			if (otherFrog.position.x > ball.position.x - 100) {
+				targetX = ball.position.x - 100;
+				targetY = otherFrog.position.y;
+			} else if (otherFrog.position.y > ball.position.y || otherFrog.position.y < ball.position.y - 25) {
+				targetX = ball.position.x - 100;
+				targetY = ball.position.y - 25;
+			} else {
+				otherFrog.chase = false;
+				otherFrog.kick = true;
+			}
+			
+			game.physics.arcade.moveToXY(otherFrog, targetX, targetY, 100);				
+				
+		} else if (otherFrog.kick) {
+			game.physics.arcade.moveToObject(otherFrog, ball, 150);
 		}
 
 	}
