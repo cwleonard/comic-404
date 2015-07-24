@@ -14,20 +14,22 @@ var init = function () {
 
 		game.load.image('tree2', 'images/tree2.png');
 		game.load.image('frog', 'images/frog.png');
+		game.load.image('goal', 'images/goal.png');
+		game.load.image('net', 'images/net.png');
 		game.load.spritesheet('ball', 'images/ball_animation.png', 45, 45);
 
 		game.load.tilemap('map', 'images/ground.json', null, Phaser.Tilemap.TILED_JSON);
-	    game.load.image('tiles', 'images/groundTiles.png');
+	    game.load.image('tiles', 'images/field-tiles.png');
 
 	}
 	
-	var frog;
-	var otherFrog;
-	var tree;
+	var frog, otherFrog;
+	var tree, tree2;
 	var ball;
 	var group;
 	var cursors;
 	var anim;
+	var goal1, goal2;
 	
 	var map;
 	var layer;
@@ -37,40 +39,55 @@ var init = function () {
 		game.stage.backgroundColor = "0x409d5a";
 		
 		map = game.add.tilemap('map');
-		map.addTilesetImage('groundTiles', 'tiles');;
+		map.addTilesetImage('field-tiles', 'tiles');;
 		layer = map.createLayer('groundLayer');
 		layer.resizeWorld();
 		
 		group = game.add.group();
+		
+        var net = game.add.image(-41, 237, 'net');
 
 		frog = group.create(200, 200, 'frog');
 		game.physics.enable(frog, Phaser.Physics.ARCADE);
-        frog.body.drag.set(300);
+        frog.body.drag.set(350);
         frog.body.setSize(60, 25, 0, 42);
         frog.body.allowGravity = false;
         frog.body.collideWorldBounds = true;
         frog.body.maxVelocity.set(200);
-
         
 		otherFrog = group.create(600, 200, 'frog');
 		game.physics.enable(otherFrog, Phaser.Physics.ARCADE);
-		otherFrog.body.drag.set(300);
+		otherFrog.body.drag.set(350);
 		otherFrog.body.setSize(60, 25, 0, 42);
 		otherFrog.body.allowGravity = false;
 		otherFrog.body.collideWorldBounds = true;
 		otherFrog.body.maxVelocity.set(200);
 		otherFrog.chase = true;
         
-        
-		tree = group.create(100, 300, 'tree2');
+		tree = group.create(230, -75, 'tree2');
 		game.physics.enable(tree, Phaser.Physics.ARCADE);
 		tree.body.setSize(79, 25, 0, 98);
 		tree.body.immovable = true;
+
+		tree2 = group.create(450, -75, 'tree2');
+		game.physics.enable(tree2, Phaser.Physics.ARCADE);
+		tree2.body.setSize(79, 25, 0, 98);
+		tree2.body.immovable = true;
+		
+		goal1 = group.create(-40, 400, 'goal');
+		game.physics.enable(goal1, Phaser.Physics.ARCADE);
+		goal1.body.setSize(112, 22, 0, 98);
+		goal1.body.immovable = true;
+		
+		goal2 = group.create(-40, 240, 'goal');
+		game.physics.enable(goal2, Phaser.Physics.ARCADE);
+		goal2.body.setSize(112, 22, 0, 98);
+		goal2.body.immovable = true;
 		
         ball = group.create(300, 300, 'ball');
         game.physics.enable(ball, Phaser.Physics.ARCADE);
         ball.body.bounce.set(1);
-        ball.body.drag.set(20);
+        ball.body.drag.set(30);
         ball.body.allowGravity = false;
         ball.body.setSize(45, 35, 0, 8);
         ball.body.collideWorldBounds = true;
@@ -78,7 +95,7 @@ var init = function () {
         anim = ball.animations.add("roll");
         
         group.sort();
-		
+        
         game.camera.follow(frog);
         
 		cursors = game.input.keyboard.createCursorKeys();	
@@ -127,9 +144,9 @@ var init = function () {
 		}
 		
 		if (otherFrog.chase) {
-			
+
 			var targetX, targetY;
-			
+
 			if (otherFrog.position.x > ball.position.x - 100) {
 				targetX = ball.position.x - 100;
 				targetY = otherFrog.position.y;
@@ -140,11 +157,13 @@ var init = function () {
 				otherFrog.chase = false;
 				otherFrog.kick = true;
 			}
-			
+
 			game.physics.arcade.moveToXY(otherFrog, targetX, targetY, 100);				
-				
+
 		} else if (otherFrog.kick) {
+
 			game.physics.arcade.moveToObject(otherFrog, ball, 150);
+
 		}
 
 	}
@@ -153,7 +172,8 @@ var init = function () {
 		
 		//game.debug.body(frog); // un-comment to see the boxes
 	    //game.debug.body(ball);
-	    //game.debug.body(tree);
+	    //game.debug.body(goal1);
+	    //game.debug.body(goal2);
 		
 	}
 
