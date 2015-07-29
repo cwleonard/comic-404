@@ -69,7 +69,7 @@ var init = function () {
 		frog = group.create(720, 400, 'frog');
 		game.physics.enable(frog, Phaser.Physics.ARCADE);
         frog.body.offset.x = 30;
-        frog.body.offset.y = 40;
+        frog.body.offset.y = 20;
         frog.body.drag.set(350);
         frog.body.setSize(60, 25, 0, 42);
         frog.body.allowGravity = false;
@@ -79,7 +79,7 @@ var init = function () {
 		otherFrog = group.create(940, 400, 'frog');
 		game.physics.enable(otherFrog, Phaser.Physics.ARCADE);
 		otherFrog.body.offset.x = 30;
-		otherFrog.body.offset.y = 40;
+		otherFrog.body.offset.y = 20;
 		otherFrog.body.drag.set(350);
 		otherFrog.body.setSize(60, 25, 0, 42);
 		otherFrog.body.allowGravity = false;
@@ -199,36 +199,10 @@ var init = function () {
 			
 		});
 		
-		if (mode === PLAY_MODE && otherFrog.chase) {
-
-			var targetX, targetY;
-
-			if (otherFrog.position.x > ball.position.x - 100) {
-				targetX = ball.position.x - 100;
-				if (Math.abs(otherFrog.position.y - ball.position.y) < 25) {
-					targetY = ball.position.y + 25;
-				} else {
-					targetY = otherFrog.position.y;
-				}
-				
-			} else if (otherFrog.position.y > ball.position.y || otherFrog.position.y < ball.position.y - 25) {
-
-				targetX = ball.position.x - 100;
-				targetY = ball.position.y - 25;
-
-			} else {
-				otherFrog.chase = false;
-				otherFrog.kick = true;
-			}
-
-			game.physics.arcade.moveToXY(otherFrog, targetX, targetY, 100);
-
-		} else if (canMove() && otherFrog.kick) {
-
-			game.physics.arcade.moveToObject(otherFrog, ball, 150);
-
+		if (mode === PLAY_MODE) {
+			var coords = setTarget(otherFrog, ball);
+			game.physics.arcade.moveToXY(otherFrog, coords.x, coords.y, 100);
 		}
-		
 
 		if (mode === PLAY_MODE
 				&& (ball.position.x < 40 || ball.position.y < 50
@@ -251,10 +225,74 @@ var init = function () {
 		
 	}
 	
+	function setTarget(o, b) {
+		
+		var zone = 0;
+		
+		if (o.position.x < (b.position.x - 90) && o.position.y < (b.position.y - 5)) {
+			zone = 1;
+		} else if (o.position.x >= (b.position.x - 90) && o.position.x <= (b.position.x + 30) && o.position.y < (b.position.y - 30)) {
+			zone = 2;
+		} else if (o.position.x > (b.position.x + 30) && o.position.y < (b.position.y - 30)) {
+			zone = 3;
+		} else if (o.position.x > (b.position.x + 30) && o.position.y <= (b.position.y) && o.position.y > (b.position.y - 30)) {
+			zone = 4;
+		} else if (o.position.x > (b.position.x + 30) && o.position.y > (b.position.y) && o.position.y < (b.position.y + 30)) {
+			zone = 5;
+		} else if (o.position.x > (b.position.x + 30) && o.position.y > (b.position.y + 30)) {
+			zone = 6;
+		} else if (o.position.x >= (b.position.x - 90) && o.position.x <= (b.position.x + 30) && o.position.y > (b.position.y + 30)) {
+			zone = 7;
+		} else if (o.position.x < (b.position.x - 90) && o.position.y > (b.position.y + 5)) {
+			zone = 8;
+		} else if (o.position.x < (b.position.x - 90) && o.position.y >= (b.position.y - 5) && o.position.y <= (b.position.y + 5)) {
+			zone = 9;
+		}
+		
+		console.log(zone);
+		
+		var ret = {
+				x: o.position.x,
+				y: o.position.y
+		};
+		if (zone === 1) {
+			ret.x = b.position.x - 180;
+			ret.y = b.position.y + 20;
+		} else if (zone === 2) {
+			ret.x = b.position.x - 180;
+			ret.y = b.position.y - 150;
+		} else if (zone === 3) {
+			ret.x = b.position.x - 180;
+			ret.y = b.position.y - 150;
+		} else if (zone === 4) {
+			ret.x = b.position.x + 90;
+			ret.y = b.position.y - 90;
+		} else if (zone === 5) {
+			ret.x = b.position.x + 90;
+			ret.y = b.position.y + 90;
+		} else if (zone === 6) {
+			ret.x = b.position.x - 180;
+			ret.y = b.position.y + 150;
+		} else if (zone === 7) {
+			ret.x = b.position.x - 180;
+			ret.y = b.position.y + 150;
+		} else if (zone === 8) {
+			ret.x = b.position.x - 180;
+			ret.y = b.position.y - 20;
+		} else if (zone === 9) {
+			ret.x = b.position.x + 90;
+			ret.y = b.position.y - 15;
+		}
+		
+		return ret;
+		
+	}
+	
 	function render() {
 		
 		//game.debug.body(frog); // un-comment to see the boxes
 	    //game.debug.body(ball);
+	    //game.debug.body(otherFrog);
 	    //game.debug.body(goal1);
 	    //game.debug.body(goal2);
 		
