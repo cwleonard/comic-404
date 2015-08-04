@@ -9,6 +9,13 @@ var init = function () {
 	var READY_MODE = 3;
 	var SCORE_MODE = 4;
 	
+	var myScore = 0;
+	var opScore = 0;
+	
+	var bigText;
+	var smallText;
+	var scoreText1;
+	var scoreText2;
 	
 	var game = new Phaser.Game(width, height, Phaser.AUTO, 'test', {
 		preload: preload,
@@ -16,13 +23,37 @@ var init = function () {
 		update: update,
 		render: render
 	});
+
+	
+	//  The Google WebFont Loader will look for this object, so create it before loading the script.
+	WebFontConfig = {
+
+	    //  'active' means all requested fonts have finished loading
+	    //  We set a 1 second delay before calling 'createText'.
+	    //  For some reason if we don't the browser cannot render the text the first time it's created.
+	    active: function() { game.time.events.add(Phaser.Timer.SECOND, createText, this); },
+
+	    //  The Google Fonts we want to load (specify as many as you like in the array)
+	    google: {
+	      families: ['Sniglet']
+	    }
+
+	};
+	
+	
+	
 	
 	function preload() {
 
+		// Load the Google WebFont Loader script
+	    game.load.script('webfont', '//ajax.googleapis.com/ajax/libs/webfont/1.4.7/webfont.js');
+	    
 		// "normal" images
 		game.load.image('frog', 'images/frog.png');
 		game.load.image('goal', 'images/goal.png');
 		game.load.image('net', 'images/net.png');
+		game.load.image('goal2', 'images/goal2.png');
+		game.load.image('net2', 'images/net2.png');
 		
 		// spritesheet for ball animation
 		game.load.spritesheet('ball', 'images/ball_animation.png', 45, 45);
@@ -64,9 +95,10 @@ var init = function () {
 		
 		group = game.add.group();
 		
-        var net = game.add.image(-41, 237, 'net');
+        var net  = game.add.image(-41, 237, 'net');
+        var net2 = game.add.image(1649, 237, 'net2');
 
-		frog = group.create(720, 400, 'frog');
+		frog = group.create(940, 400, 'frog');
 		game.physics.enable(frog, Phaser.Physics.ARCADE);
         frog.body.offset.x = 30;
         frog.body.offset.y = 20;
@@ -76,7 +108,7 @@ var init = function () {
         frog.body.collideWorldBounds = true;
         frog.body.maxVelocity.set(200);
         
-		otherFrog = group.create(940, 400, 'frog');
+		otherFrog = group.create(720, 400, 'frog');
 		game.physics.enable(otherFrog, Phaser.Physics.ARCADE);
 		otherFrog.body.offset.x = 30;
 		otherFrog.body.offset.y = 20;
@@ -91,12 +123,22 @@ var init = function () {
 		game.physics.enable(goalPost1a, Phaser.Physics.ARCADE);
 		goalPost1a.body.setSize(112, 22, 0, 98);
 		goalPost1a.body.immovable = true;
-		
+
+		goalPost2a = group.create(1649, 400, 'goal2');
+		game.physics.enable(goalPost2a, Phaser.Physics.ARCADE);
+		goalPost2a.body.setSize(112, 22, 0, 98);
+		goalPost2a.body.immovable = true;
+
 		goalPost1b = group.create(-40, 240, 'goal');
 		game.physics.enable(goalPost1b, Phaser.Physics.ARCADE);
 		goalPost1b.body.setSize(112, 22, 0, 98);
 		goalPost1b.body.immovable = true;
-		
+
+		goalPost2b = group.create(1649, 240, 'goal2');
+		game.physics.enable(goalPost2b, Phaser.Physics.ARCADE);
+		goalPost2b.body.setSize(112, 22, 0, 98);
+		goalPost2b.body.immovable = true;
+
 		goal1 = group.create(35, 360);
 		goal1.name = "goal";
 		game.physics.enable(goal1, Phaser.Physics.ARCADE);
@@ -150,6 +192,8 @@ var init = function () {
 		// -------------------------------
 		
 		if (mode === WAIT_MODE && spacebar.isDown) {
+			bigText.visible = false;
+			smallText.visible = false;
 			mode = PLAY_MODE;
 		}
 		
@@ -194,6 +238,7 @@ var init = function () {
 			}
 			
 			if ((o1.name === "goal" && o2 === ball) || (o2.name === "goal" && o1 === ball)) {
+				myScore++;
 				reset();
 			}
 			
@@ -229,56 +274,57 @@ var init = function () {
 		
 		var zone = 0;
 		
-		if (o.position.x < (b.position.x - 90) && o.position.y < (b.position.y - 5)) {
+		if (o.position.x < (b.position.x - 90) && o.position.y < (b.position.y - 35)) {
 			zone = 1;
-		} else if (o.position.x >= (b.position.x - 90) && o.position.x <= (b.position.x + 30) && o.position.y < (b.position.y - 30)) {
+		} else if (o.position.x >= (b.position.x - 90) && o.position.x <= (b.position.x + 30) && o.position.y < (b.position.y - 60)) {
 			zone = 2;
-		} else if (o.position.x > (b.position.x + 30) && o.position.y < (b.position.y - 30)) {
+		} else if (o.position.x > (b.position.x + 30) && o.position.y < (b.position.y - 60)) {
 			zone = 3;
-		} else if (o.position.x > (b.position.x + 30) && o.position.y <= (b.position.y) && o.position.y > (b.position.y - 30)) {
+		} else if (o.position.x > (b.position.x + 30) && o.position.y <= (b.position.y - 30) && o.position.y > (b.position.y - 60)) {
 			zone = 4;
-		} else if (o.position.x > (b.position.x + 30) && o.position.y > (b.position.y) && o.position.y < (b.position.y + 30)) {
+		} else if (o.position.x > (b.position.x + 30) && o.position.y > (b.position.y - 30) && o.position.y <= (b.position.y)) {
 			zone = 5;
-		} else if (o.position.x > (b.position.x + 30) && o.position.y > (b.position.y + 30)) {
+		} else if (o.position.x > (b.position.x + 30) && o.position.y > (b.position.y)) {
 			zone = 6;
-		} else if (o.position.x >= (b.position.x - 90) && o.position.x <= (b.position.x + 30) && o.position.y > (b.position.y + 30)) {
+		} else if (o.position.x >= (b.position.x - 90) && o.position.x <= (b.position.x + 30) && o.position.y > (b.position.y)) {
 			zone = 7;
-		} else if (o.position.x < (b.position.x - 90) && o.position.y > (b.position.y + 5)) {
+		} else if (o.position.x < (b.position.x - 90) && o.position.y > (b.position.y - 25)) {
 			zone = 8;
-		} else if (o.position.x < (b.position.x - 90) && o.position.y >= (b.position.y - 5) && o.position.y <= (b.position.y + 5)) {
+		} else if (o.position.x < (b.position.x - 90) && o.position.y >= (b.position.y - 35) && o.position.y <= (b.position.y - 25)) {
 			zone = 9;
 		}
-		
-		console.log(zone);
 		
 		var ret = {
 				x: o.position.x,
 				y: o.position.y
 		};
+		
+		console.log("zone = " + zone);
+		
 		if (zone === 1) {
 			ret.x = b.position.x - 180;
-			ret.y = b.position.y + 20;
+			ret.y = b.position.y - 10;
 		} else if (zone === 2) {
 			ret.x = b.position.x - 180;
-			ret.y = b.position.y - 150;
+			ret.y = b.position.y - 180;
 		} else if (zone === 3) {
 			ret.x = b.position.x - 180;
-			ret.y = b.position.y - 150;
+			ret.y = b.position.y - 180;
 		} else if (zone === 4) {
 			ret.x = b.position.x + 90;
-			ret.y = b.position.y - 90;
+			ret.y = b.position.y - 120;
 		} else if (zone === 5) {
 			ret.x = b.position.x + 90;
-			ret.y = b.position.y + 90;
+			ret.y = b.position.y + 60;
 		} else if (zone === 6) {
 			ret.x = b.position.x - 180;
-			ret.y = b.position.y + 150;
+			ret.y = b.position.y + 120;
 		} else if (zone === 7) {
 			ret.x = b.position.x - 180;
-			ret.y = b.position.y + 150;
+			ret.y = b.position.y + 120;
 		} else if (zone === 8) {
 			ret.x = b.position.x - 180;
-			ret.y = b.position.y - 20;
+			ret.y = b.position.y - 50;
 		} else if (zone === 9) {
 			ret.x = b.position.x + 90;
 			ret.y = b.position.y - 15;
@@ -362,16 +408,19 @@ var init = function () {
 	
 	function reset() {
 		
+		scoreText1.text = "Home: " + myScore;
+		scoreText2.text = "Away: " + opScore;
+		
 		mode = WAIT_MODE;
 		
 		stopSprite(frog);
 		stopSprite(otherFrog);
 		stopSprite(ball);
 		
-		frog.position.x = 720;
+		frog.position.x = 940;
 		frog.position.y = 400;
 
-		otherFrog.position.x = 940;
+		otherFrog.position.x = 720;
 		otherFrog.position.y = 400;
 
         ball.position.x = 840;
@@ -379,6 +428,32 @@ var init = function () {
 		
 	}
 
+	function createText() {
+
+		scoreText1 = game.add.text(20, 10, "Home: " + myScore);
+		scoreText1.fixedToCamera = true;
+
+		scoreText2 = game.add.text(1060, 10, " Away: " + opScore);
+		scoreText2.fixedToCamera = true;
+
+	    bigText = game.add.text(game.camera.position.x, game.camera.position.y - 200, "Frog Soccer!");
+	    bigText.anchor.setTo(0.5);
+	    bigText.font = 'Sniglet';
+	    bigText.fontSize = 80;
+	    bigText.fill = "#0000FF";
+
+	    bigText.align = 'center';
+	    bigText.stroke = '#000000';
+	    bigText.strokeThickness = 2;
+
+	    smallText = game.add.text(game.camera.position.x, game.camera.position.y - 100, "Press <Space> To Start!");
+	    smallText.anchor.setTo(0.5);
+	    smallText.font = 'Sniglet';
+	    smallText.fontSize = 30;
+	    smallText.fill = "#000000";
+	    
+	}
+	
 };
 
 window.onload = init;
