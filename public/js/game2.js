@@ -1,5 +1,3 @@
-var width = window.innerWidth;
-var height = window.innerHeight;
 
 var init = function () {
 	
@@ -17,7 +15,7 @@ var init = function () {
 	var scoreText1;
 	var scoreText2;
 	
-	var game = new Phaser.Game(width, height, Phaser.AUTO, 'test', {
+	var game = new Phaser.Game(width, height, Phaser.AUTO, 'gameArea', {
 		preload: preload,
 		create: create,
 		update: update,
@@ -26,15 +24,12 @@ var init = function () {
 
 	function preload() {
 
-		// Load the Google WebFont Loader script
-	    //game.load.script('webfont', '//ajax.googleapis.com/ajax/libs/webfont/1.4.7/webfont.js');
-	    
 		// "normal" images
-		game.load.image('frog', 'images/frog.png');
-		game.load.image('goal', 'images/goal.png');
-		game.load.image('net', 'images/net.png');
-		game.load.image('goal2', 'images/goal2.png');
-		game.load.image('net2', 'images/net2.png');
+		game.load.image('frog', './images/frog.png');
+		game.load.image('goal', './images/goal.png');
+		game.load.image('net', './images/net.png');
+		game.load.image('goal2', './images/goal2.png');
+		game.load.image('net2', './images/net2.png');
 		
 		// spritesheet for ball animation
 		game.load.spritesheet('ball', 'images/ball_animation.png', 45, 45);
@@ -184,16 +179,15 @@ var init = function () {
 		}
 
 		// -------------------------------
-		
+
 		if (mode === WAIT_MODE && spacebar.isDown) {
 			bigText.visible = false;
 			smallText.visible = false;
 			mode = PLAY_MODE;
 		}
-		
+
 		// ------------------------------
-		
-		
+
 		if (!canMove()) {
 			
 			frog.body.acceleration.x = 0;
@@ -202,30 +196,29 @@ var init = function () {
 		} else {
 			
 			if (cursors.left.isDown) {
-				frog.body.acceleration.x -= 100;
+				frog.body.acceleration.x -= 80;
 			} else if (cursors.right.isDown) {
-				frog.body.acceleration.x += 100;
+				frog.body.acceleration.x += 80;
 			} else {
 				frog.body.acceleration.x = 0;
 			}
 			
 			if (cursors.up.isDown) {
-				frog.body.acceleration.y -= 100;
+				frog.body.acceleration.y -= 80;
 			} else if (cursors.down.isDown) {
-				frog.body.acceleration.y += 100;
+				frog.body.acceleration.y += 80;
 			} else {
 				frog.body.acceleration.y = 0;
 			}
 			
 		}
-		
 
 		group.sort('bottom', Phaser.Group.SORT_ASCENDING);
 		game.physics.arcade.collide(group, group, function(o1, o2) {
 			
 			if ((o1.name === "goal" && o2 === ball)) {
 				o1.incScore();
-				reset();
+				goal();
 			}
 			
 		});
@@ -236,7 +229,7 @@ var init = function () {
 		}
 
 		if (mode === PLAY_MODE
-				&& (ball.position.x < 40 || ball.position.y < 50
+				&& (ball.position.x < 40 || ball.position.y < 30
 						|| ball.position.x > 1640 || ball.position.y > 800)) {
 
 			whistle.play();
@@ -319,7 +312,9 @@ var init = function () {
 	
 	function render() {
 		
-		//game.debug.body(frog); // un-comment to see the boxes
+		// un-comment to see the boxes
+		
+		//game.debug.body(frog);
 	    //game.debug.body(ball);
 	    //game.debug.body(otherFrog);
 	    //game.debug.body(goal1);
@@ -358,25 +353,22 @@ var init = function () {
 				ball.body.velocity.y = 200;
 			}
 
-			setTimeout(function() {
+			game.time.events.add(500, function() {
 				mode = PLAY_MODE;
-			}, 500);
+			}, this);
 
 		};
 		
-		setTimeout(function() {
+		game.time.events.add(1000, function() {
 			
 			mode = READY_MODE;
-
-			setTimeout(function() {
-				
-				toss(x, y);
-				
-			}, 1000);
 			
-		}, 1000);
+			game.time.events.add(1000, function() {
+				toss(x, y);
+			}, this);
+			
+		}, this);
 		
-
 	}
 
 	function stopSprite(s) {
@@ -389,12 +381,27 @@ var init = function () {
 		
 	}
 	
-	function reset() {
+	function goal() {
+		
+		stopSprite(ball);
 		
 		scoreText1.text = "Home: " + myScore;
 		scoreText2.text = "Away: " + opScore;
+
+		bigText.text = "GOAL!";
+		bigText.visible = true;
+		
+		game.time.events.add(2000, reset);
+		
+	}
+	
+	
+	function reset() {
 		
 		mode = WAIT_MODE;
+		
+		bigText.visible = false;
+		smallText.visible = true;
 		
 		stopSprite(frog);
 		stopSprite(otherFrog);
@@ -419,7 +426,8 @@ var init = function () {
 		scoreText2 = game.add.text((width - 140), 10, " Away: " + opScore);
 		scoreText2.fixedToCamera = true;
 
-	    bigText = game.add.text(840, 200, "Frog Soccer!");
+	    bigText = game.add.text((width/2), 200, "Frog Soccer!");
+	    bigText.fixedToCamera = true;
 	    bigText.anchor.setTo(0.5);
 	    bigText.font = 'Sniglet';
 	    bigText.fontSize = 80;
@@ -429,7 +437,8 @@ var init = function () {
 	    bigText.stroke = '#000000';
 	    bigText.strokeThickness = 2;
 
-	    smallText = game.add.text(840, 300, "Press <Space> To Start!");
+	    smallText = game.add.text((width/2), 300, "Press <Space> To Start!");
+	    smallText.fixedToCamera = true;
 	    smallText.anchor.setTo(0.5);
 	    smallText.font = 'Sniglet';
 	    smallText.fontSize = 30;
