@@ -1,5 +1,5 @@
-var width = 1200;
-var height = 800;
+var width = window.innerWidth;
+var height = window.innerHeight;
 
 var init = function () {
 	
@@ -97,7 +97,7 @@ var init = function () {
 		otherFrog.body.setSize(60, 25, 0, 42);
 		otherFrog.body.allowGravity = false;
 		otherFrog.body.collideWorldBounds = true;
-		otherFrog.body.maxVelocity.set(200);
+		otherFrog.body.maxVelocity.set(180);
 		otherFrog.chase = true;
         
 		goalPost1a = group.create(-40, 400, 'goal');
@@ -125,20 +125,31 @@ var init = function () {
 		game.physics.enable(goal1, Phaser.Physics.ARCADE);
 		goal1.body.setSize(10, 160, 0, 0);
 		goal1.body.immovable = true;
+		goal1.incScore = function() {
+			if (mode !== SCORE_MODE) {
+				myScore++;
+				mode = SCORE_MODE;
+			}
+		};
 		
 		goal2 = group.create(1675, 360);
 		goal2.name = "goal";
 		game.physics.enable(goal2, Phaser.Physics.ARCADE);
 		goal2.body.setSize(10, 160, 0, 0);
 		goal2.body.immovable = true;
-		
+		goal2.incScore = function() {
+			if (mode !== SCORE_MODE) {
+				opScore++;
+				mode = SCORE_MODE;
+			}
+		};
 		
         ball = group.create(840, 400, 'ball');
         game.physics.enable(ball, Phaser.Physics.ARCADE);
         ball.body.offset.x = 22;
         ball.body.offset.y = 22;
-        ball.body.bounce.set(0.999);
-        ball.body.drag.set(40);
+        ball.body.bounce.set(0.899);
+        ball.body.drag.set(50);
         ball.body.allowGravity = false;
         ball.body.setSize(45, 30, 0, 15);
         ball.body.collideWorldBounds = false;
@@ -212,16 +223,8 @@ var init = function () {
 		group.sort('bottom', Phaser.Group.SORT_ASCENDING);
 		game.physics.arcade.collide(group, group, function(o1, o2) {
 			
-			if ((o1 === otherFrog && o2 === ball) || (o2 === otherFrog && o1 === ball)) {
-				otherFrog.chase = false;
-				otherFrog.kick = false;
-				setTimeout(function() {
-					otherFrog.chase = true;
-				}, 250);
-			}
-			
-			if ((o1.name === "goal" && o2 === ball) || (o2.name === "goal" && o1 === ball)) {
-				myScore++;
+			if ((o1.name === "goal" && o2 === ball)) {
+				o1.incScore();
 				reset();
 			}
 			
@@ -237,9 +240,6 @@ var init = function () {
 						|| ball.position.x > 1640 || ball.position.y > 800)) {
 
 			whistle.play();
-
-			otherFrog.kick = false;
-			otherFrog.chase = true;
 
 			tossBall(ball.position.x, ball.position.y);
 
@@ -282,7 +282,7 @@ var init = function () {
 				y: o.position.y
 		};
 		
-		console.log("zone = " + zone);
+		//console.log("zone = " + zone);
 		
 		if (zone === 1) {
 			ret.x = b.position.x - 180;
@@ -416,10 +416,10 @@ var init = function () {
 		scoreText1 = game.add.text(20, 10, "Home: " + myScore);
 		scoreText1.fixedToCamera = true;
 
-		scoreText2 = game.add.text(1060, 10, " Away: " + opScore);
+		scoreText2 = game.add.text((width - 140), 10, " Away: " + opScore);
 		scoreText2.fixedToCamera = true;
 
-	    bigText = game.add.text(game.camera.position.x, game.camera.position.y - 200, "Frog Soccer!");
+	    bigText = game.add.text(840, 200, "Frog Soccer!");
 	    bigText.anchor.setTo(0.5);
 	    bigText.font = 'Sniglet';
 	    bigText.fontSize = 80;
@@ -429,7 +429,7 @@ var init = function () {
 	    bigText.stroke = '#000000';
 	    bigText.strokeThickness = 2;
 
-	    smallText = game.add.text(game.camera.position.x, game.camera.position.y - 100, "Press <Space> To Start!");
+	    smallText = game.add.text(840, 300, "Press <Space> To Start!");
 	    smallText.anchor.setTo(0.5);
 	    smallText.font = 'Sniglet';
 	    smallText.fontSize = 30;
