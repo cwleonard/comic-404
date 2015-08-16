@@ -25,7 +25,6 @@ var init = function () {
 	function preload() {
 
 		// "normal" images
-		game.load.image('frog', './images/frog.png');
 		game.load.image('goal', './images/goal.png');
 		game.load.image('net', './images/net.png');
 		game.load.image('goal2', './images/goal2.png');
@@ -33,6 +32,10 @@ var init = function () {
 		
 		// spritesheet for ball animation
 		game.load.spritesheet('ball', 'images/ball_animation.png', 45, 45);
+
+		// spritesheets for frog animation
+		game.load.spritesheet('frog', 'images/frog_ani.png', 79, 60);
+		game.load.spritesheet('frog2', 'images/frog_ani2.png', 79, 60);
 
 		// tilemap and tiles
 		game.load.tilemap('map', 'images/ground.json', null, Phaser.Tilemap.TILED_JSON);
@@ -79,21 +82,34 @@ var init = function () {
         frog.body.offset.x = 30;
         frog.body.offset.y = 20;
         frog.body.drag.set(350);
-        frog.body.setSize(60, 25, 0, 42);
+        frog.body.setSize(60, 25, 9, 35);
         frog.body.allowGravity = false;
         frog.body.collideWorldBounds = true;
         frog.body.maxVelocity.set(200);
         
-		otherFrog = group.create(720, 400, 'frog');
+        frog.animations.add("left", [0, 1, 2], 10, true);
+        frog.animations.add("right", [3, 4, 5], 10, true);
+        frog.animations.add("front", [6, 7, 8], 10, true);
+        frog.animations.add("back", [9, 10, 11], 10, true);
+        frog.animations.currentAnim = frog.animations.getAnimation("left");
+        
+		otherFrog = group.create(720, 400, 'frog2');
 		game.physics.enable(otherFrog, Phaser.Physics.ARCADE);
 		otherFrog.body.offset.x = 30;
 		otherFrog.body.offset.y = 20;
 		otherFrog.body.drag.set(350);
-		otherFrog.body.setSize(60, 25, 0, 42);
+		otherFrog.body.setSize(60, 25, 9, 35);
 		otherFrog.body.allowGravity = false;
 		otherFrog.body.collideWorldBounds = true;
 		otherFrog.body.maxVelocity.set(180);
 		otherFrog.chase = true;
+		
+		otherFrog.animations.add("left", [0, 1, 2], 8, true);
+		otherFrog.animations.add("right", [3, 4, 5], 8, true);
+		otherFrog.animations.add("front", [6, 7, 8], 8, true);
+        otherFrog.animations.add("back", [9, 10, 11], 8, true);
+        otherFrog.animations.currentAnim = otherFrog.animations.getAnimation("right");
+
         
 		goalPost1a = group.create(-40, 400, 'goal');
 		game.physics.enable(goalPost1a, Phaser.Physics.ARCADE);
@@ -212,6 +228,9 @@ var init = function () {
 			}
 			
 		}
+		
+		setAnimation(frog);
+		setAnimation(otherFrog);
 
 		group.sort('bottom', Phaser.Group.SORT_ASCENDING);
 		game.physics.arcade.collide(group, group, function(o1, o2) {
@@ -395,6 +414,38 @@ var init = function () {
 		
 	}
 	
+	function setAnimation(f) {
+		
+//		if (f.body.acceleration.x == 0 && f.body.acceleration.y == 0) {
+//			f.animations.stop(null, true);
+//		}
+		
+		if (f.body.velocity.x == 0 && f.body.velocity.y == 0) {
+			f.animations.stop(null, true);
+		} else {
+			
+			if (Math.abs(f.body.velocity.x) >= Math.abs(f.body.velocity.y)) {
+				
+				if (f.body.velocity.x > 0) {
+					f.animations.play("right");
+				} else if (f.body.velocity.x < 0) {
+					f.animations.play("left");
+				}
+				
+			} else {
+
+				if (f.body.velocity.y > 0) {
+					f.animations.play("front");
+				} else if (f.body.velocity.y < 0) {
+					f.animations.play("back");
+				}
+
+			}
+			
+		}
+		
+		
+	}
 	
 	function reset() {
 		
@@ -410,8 +461,14 @@ var init = function () {
 		frog.position.x = 940;
 		frog.position.y = 400;
 
+		frog.animations.stop(null, true);
+        frog.animations.currentAnim = frog.animations.getAnimation("left");
+		
 		otherFrog.position.x = 720;
 		otherFrog.position.y = 400;
+
+		otherFrog.animations.stop(null, true);
+        otherFrog.animations.currentAnim = otherFrog.animations.getAnimation("right");
 
         ball.position.x = 840;
         ball.position.y = 400;
