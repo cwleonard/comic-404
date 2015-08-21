@@ -177,7 +177,7 @@ var init = function () {
 		createText();
 		
 		whistle = game.sound.add("whistle");
-
+		
 	}
 
 	function update() {
@@ -196,7 +196,7 @@ var init = function () {
 
 		// -------------------------------
 
-		if (mode === WAIT_MODE && spacebar.isDown) {
+		if (mode === WAIT_MODE && (spacebar.isDown || game.input.activePointer.isDown)) {
 			bigText.visible = false;
 			smallText.visible = false;
 			mode = PLAY_MODE;
@@ -225,6 +225,12 @@ var init = function () {
 				frog.body.acceleration.y += 80;
 			} else {
 				frog.body.acceleration.y = 0;
+			}
+			
+			if (game.input.activePointer.isDown) {
+				
+				game.physics.arcade.moveToPointer(frog, 180);
+				
 			}
 			
 		}
