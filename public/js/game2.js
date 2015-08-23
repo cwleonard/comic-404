@@ -1,6 +1,15 @@
 
 var init = function () {
 	
+	var HOME_START_X = 940;
+	var HOME_START_Y = 400;
+	
+	var OPP_START_X = 720;
+	var OPP_START_Y = 400;
+	
+	var BALL_START_X = 840;
+	var BALL_START_Y = 400;
+	
 	var WAIT_MODE = 0;
 	var PLAY_MODE = 1;
 	var TOSS_MODE = 2;
@@ -15,7 +24,31 @@ var init = function () {
 	var scoreText1;
 	var scoreText2;
 	
-	var game = new Phaser.Game(width, height, Phaser.AUTO, 'gameArea', {
+	var images = [
+	              {name: "goal",  type: "png"},
+	              {name: "goal2", type: "png"},
+	              {name: "net",   type: "png"},
+	              {name: "net2",  type: "png"}
+	              ];
+	
+	var sprites = [
+	               {name: "ball", type: "png", width: 45, height: 45},
+	               {name: "frog", type: "png", width: 79, height: 60},
+	               {name: "frog2", type: "png", width: 79, height: 60}
+	               ];
+	
+	var audio = [
+	             {name: "whistle", type: "mp3"}
+	             ];
+	
+	var gameAssets = {
+			base: "assets",
+			images: images,
+			sprites: sprites,
+			audio: audio
+	};
+	
+	var game = new Phaser.Game(width, height, Phaser.CANVAS, "gameArea", {
 		preload: preload,
 		create: create,
 		update: update,
@@ -24,41 +57,33 @@ var init = function () {
 
 	function preload() {
 
-		// "normal" images
-		game.load.image('goal', './images/goal.png');
-		game.load.image('net', './images/net.png');
-		game.load.image('goal2', './images/goal2.png');
-		game.load.image('net2', './images/net2.png');
+		// static images
+		gameAssets.images.forEach(function(o, i, a) {
+			game.load.image(o.name, gameAssets.base + "/images/" + o.name + "." + o.type);
+		});
 		
-		// spritesheet for ball animation
-		game.load.spritesheet('ball', 'images/ball_animation.png', 45, 45);
-
-		// spritesheets for frog animation
-		game.load.spritesheet('frog', 'images/frog_ani.png', 79, 60);
-		game.load.spritesheet('frog2', 'images/frog_ani2.png', 79, 60);
-
+		// sprite sheets
+		gameAssets.sprites.forEach(function(o, i, a) {
+			game.load.spritesheet(o.name, gameAssets.base + "/sprites/" + o.name + "." + o.type, o.width, o.height);
+		});
+		
+		// audio
+		gameAssets.audio.forEach(function(o, i, a) {
+			game.load.audio(o.name, gameAssets.base + "/audio/" + o.name + "." + o.type);
+		});
+		
 		// tilemap and tiles
-		game.load.tilemap('map', 'images/ground.json', null, Phaser.Tilemap.TILED_JSON);
-	    game.load.image('tiles', 'images/field-tiles.png');
-	    
-	    // sounds
-	    game.load.audio('whistle', 'audio/whistle.mp3');
+		game.load.tilemap("map", "assets/images/ground.json", null, Phaser.Tilemap.TILED_JSON);
+		game.load.image("tiles", "assets/images/field-tiles.png");
 
 	}
 	
 	var mode = WAIT_MODE;
 	
 	var frog, otherFrog;
-	var tree;
 	var ball;
 	var group;
-	var anim;
-	var goalPost1a, goalPost1b;
-	var goal1, goal2;
 	var whistle;
-	
-	var map;
-	var layer;
 	
 	var cursors;
 	var spacebar;
@@ -67,105 +92,33 @@ var init = function () {
 
 		game.stage.backgroundColor = "0x409d5a";
 		
-		map = game.add.tilemap('map');
-		map.addTilesetImage('field-tiles', 'tiles');;
-		layer = map.createLayer('groundLayer');
+		var map = game.add.tilemap("map");
+		map.addTilesetImage("field-tiles", "tiles");
+		var layer = map.createLayer("groundLayer");
 		layer.resizeWorld();
 		
 		group = game.add.group();
 		
-        var net  = game.add.image(-41, 237, 'net');
-        var net2 = game.add.image(1649, 237, 'net2');
+        game.add.image(-41, 237, "net");
+        game.add.image(1649, 237, "net2");
 
-		frog = group.create(940, 400, 'frog');
-		game.physics.enable(frog, Phaser.Physics.ARCADE);
-        frog.body.offset.x = 30;
-        frog.body.offset.y = 20;
-        frog.body.drag.set(350);
-        frog.body.setSize(60, 25, 9, 35);
-        frog.body.allowGravity = false;
-        frog.body.collideWorldBounds = true;
-        frog.body.maxVelocity.set(200);
+        frog = createFrog(group, HOME_START_X, HOME_START_Y, "frog", 200, "left");
+        otherFrog = createFrog(group, OPP_START_X, OPP_START_Y, "frog2", 180, "right");
         
-        frog.animations.add("left", [0, 1, 2], 10, true);
-        frog.animations.add("right", [3, 4, 5], 10, true);
-        frog.animations.add("front", [6, 7, 8], 10, true);
-        frog.animations.add("back", [9, 10, 11], 10, true);
-        frog.animations.currentAnim = frog.animations.getAnimation("left");
-        
-		otherFrog = group.create(720, 400, 'frog2');
-		game.physics.enable(otherFrog, Phaser.Physics.ARCADE);
-		otherFrog.body.offset.x = 30;
-		otherFrog.body.offset.y = 20;
-		otherFrog.body.drag.set(350);
-		otherFrog.body.setSize(60, 25, 9, 35);
-		otherFrog.body.allowGravity = false;
-		otherFrog.body.collideWorldBounds = true;
-		otherFrog.body.maxVelocity.set(180);
-		otherFrog.chase = true;
-		
-		otherFrog.animations.add("left", [0, 1, 2], 8, true);
-		otherFrog.animations.add("right", [3, 4, 5], 8, true);
-		otherFrog.animations.add("front", [6, 7, 8], 8, true);
-        otherFrog.animations.add("back", [9, 10, 11], 8, true);
-        otherFrog.animations.currentAnim = otherFrog.animations.getAnimation("right");
-
-        
-		goalPost1a = group.create(-40, 400, 'goal');
-		game.physics.enable(goalPost1a, Phaser.Physics.ARCADE);
-		goalPost1a.body.setSize(112, 22, 0, 98);
-		goalPost1a.body.immovable = true;
-
-		goalPost2a = group.create(1649, 400, 'goal2');
-		game.physics.enable(goalPost2a, Phaser.Physics.ARCADE);
-		goalPost2a.body.setSize(112, 22, 0, 98);
-		goalPost2a.body.immovable = true;
-
-		goalPost1b = group.create(-40, 240, 'goal');
-		game.physics.enable(goalPost1b, Phaser.Physics.ARCADE);
-		goalPost1b.body.setSize(112, 22, 0, 98);
-		goalPost1b.body.immovable = true;
-
-		goalPost2b = group.create(1649, 240, 'goal2');
-		game.physics.enable(goalPost2b, Phaser.Physics.ARCADE);
-		goalPost2b.body.setSize(112, 22, 0, 98);
-		goalPost2b.body.immovable = true;
-
-		goal1 = group.create(35, 360);
-		goal1.name = "goal";
-		game.physics.enable(goal1, Phaser.Physics.ARCADE);
-		goal1.body.setSize(10, 160, 0, 0);
-		goal1.body.immovable = true;
-		goal1.incScore = function() {
+        createGoal(group, "goal", -40, 35, function() {
 			if (mode !== SCORE_MODE) {
 				myScore++;
 				mode = SCORE_MODE;
 			}
-		};
-		
-		goal2 = group.create(1675, 360);
-		goal2.name = "goal";
-		game.physics.enable(goal2, Phaser.Physics.ARCADE);
-		goal2.body.setSize(10, 160, 0, 0);
-		goal2.body.immovable = true;
-		goal2.incScore = function() {
+		});
+        createGoal(group, "goal2", 1649, 1675, function() {
 			if (mode !== SCORE_MODE) {
 				opScore++;
 				mode = SCORE_MODE;
 			}
-		};
-		
-        ball = group.create(840, 400, 'ball');
-        game.physics.enable(ball, Phaser.Physics.ARCADE);
-        ball.body.offset.x = 22;
-        ball.body.offset.y = 22;
-        ball.body.bounce.set(0.899);
-        ball.body.drag.set(50);
-        ball.body.allowGravity = false;
-        ball.body.setSize(45, 30, 0, 15);
-        ball.body.collideWorldBounds = false;
-
-        anim = ball.animations.add("roll");
+		});
+        
+        ball = createBall(BALL_START_X, BALL_START_Y, "ball");
         
         group.sort();
         
@@ -182,15 +135,15 @@ var init = function () {
 
 	function update() {
 
-		if (ball.body.velocity.x == 0 && ball.body.velocity.y == 0) {
-			anim.stop();
+		if (ball.body.velocity.x === 0 && ball.body.velocity.y === 0) {
+			ball.animations.stop();
 		} else {
 			var speed = Math.min(1, Math.max(Math.abs(ball.body.velocity.x),
 					Math.abs(ball.body.velocity.y)) / 200) * 9;
-			if (anim.isPlaying) {
-				anim.speed = speed;
+			if (ball.animations.getAnimation("roll").isPlaying) {
+				ball.animations.getAnimation("roll").speed = speed;
 			} else {
-				anim.play(speed, true);
+				ball.animations.play("roll", speed, true);
 			}
 		}
 
@@ -238,7 +191,7 @@ var init = function () {
 		setAnimation(frog);
 		setAnimation(otherFrog);
 
-		group.sort('bottom', Phaser.Group.SORT_ASCENDING);
+		group.sort("bottom", Phaser.Group.SORT_ASCENDING);
 		game.physics.arcade.collide(group, group, function(o1, o2) {
 			
 			if ((o1.name === "goal" && o2 === ball)) {
@@ -253,16 +206,118 @@ var init = function () {
 			game.physics.arcade.moveToXY(otherFrog, coords.x, coords.y, 100);
 		}
 
-		if (mode === PLAY_MODE
-				&& (ball.position.x < 40 || ball.position.y < 30
-						|| ball.position.x > 1640 || ball.position.y > 800)) {
-
-			whistle.play();
-
+		if (mode === PLAY_MODE && !ball.inPlay()) {
 			tossBall(ball.position.x, ball.position.y);
-
+		} else if (mode === READY_MODE && ball.inPlay()) {
+			mode = PLAY_MODE;
 		}
 
+	}
+	
+	/**
+	 * Creates a frog.
+	 * 
+	 * @param grp group to which this frog should be added
+	 * @param x x-coordinate for this frog
+	 * @param y y-coordinate for this frog
+	 * @param ss sprite sheet
+	 * @param mv max velocity
+	 * @param ani initial animation ('left', 'right', 'front', or 'back)
+	 * @returns the created frog
+	 */
+	function createFrog(grp, x, y, ss, mv, ani) {
+		
+		var f = grp.create(x, y, ss);
+		game.physics.enable(f, Phaser.Physics.ARCADE);
+        f.body.offset.x = 30;
+        f.body.offset.y = 20;
+        f.body.drag.set(350);
+        f.body.setSize(60, 25, 9, 35);
+        f.body.allowGravity = false;
+        f.body.collideWorldBounds = true;
+        f.body.maxVelocity.set(mv);
+        
+        f.animations.add("left", [0, 1, 2], 10, true);
+        f.animations.add("right", [3, 4, 5], 10, true);
+        f.animations.add("front", [6, 7, 8], 10, true);
+        f.animations.add("back", [9, 10, 11], 10, true);
+        f.animations.currentAnim = f.animations.getAnimation(ani);
+		
+        return f;
+        
+	}
+	
+	/**
+	 * Creates a ball.
+	 * 
+	 * @param x x-coordinate
+	 * @param y y-coordinate
+	 * @param s sprite image
+	 * @returns the created ball
+	 */
+	function createBall(x, y, s) {
+		
+        var ball = group.create(x, y, s);
+        game.physics.enable(ball, Phaser.Physics.ARCADE);
+        ball.body.offset.x = 22;
+        ball.body.offset.y = 22;
+        ball.body.bounce.set(0.899);
+        ball.body.drag.set(50);
+        ball.body.allowGravity = false;
+        ball.body.setSize(45, 30, 0, 15);
+        ball.body.collideWorldBounds = false;
+
+        ball.animations.add("roll");
+        
+        ball.inPlay = function() {
+            return (this.position.x > 40 && this.position.y > 30
+					&& this.position.x < 1640 && this.position.y < 800);
+        };
+        
+        return ball;
+
+	}
+	
+	/**
+	 * Creates a goal.
+	 * 
+	 * @param grp
+	 * @param s
+	 * @param x
+	 * @param x2
+	 * @param func
+	 */
+	function createGoal(grp, s, x, x2, func) {
+		
+		var gp1 = createGoalPost(grp, x, 400, s);
+		var gp2 = createGoalPost(grp, x, 240, s);
+		
+		var g = grp.create(x2, 360);
+		g.name = "goal";
+		game.physics.enable(g, Phaser.Physics.ARCADE);
+		g.body.setSize(10, 160, 0, 0);
+		g.body.immovable = true;
+		g.incScore = func;
+
+	}
+	
+	/**
+	 * Creates a goal post.
+	 * 
+	 * @param grp
+	 * @param x
+	 * @param y
+	 * @param s
+	 * @returns goalpost object
+	 */
+	function createGoalPost(grp, x, y, s) {
+
+		var gp = grp.create(x, y, s);
+		game.physics.enable(gp, Phaser.Physics.ARCADE);
+		gp.body.setSize(112, 22, 0, 98);
+		gp.body.immovable = true;
+		return gp;
+		
 	}
 	
 	function canMove() {
@@ -342,12 +397,12 @@ var init = function () {
 		//game.debug.body(frog);
 	    //game.debug.body(ball);
 	    //game.debug.body(otherFrog);
-	    //game.debug.body(goal1);
-	    //game.debug.body(goal2);
 		
 	}
 	
 	function tossBall(x, y) {
+
+		whistle.play();
 
 		mode = TOSS_MODE;
 		
@@ -377,10 +432,6 @@ var init = function () {
 				ball.position.y = -20;
 				ball.body.velocity.y = 200;
 			}
-
-			game.time.events.add(500, function() {
-				mode = PLAY_MODE;
-			}, this);
 
 		};
 		
@@ -426,7 +477,7 @@ var init = function () {
 //			f.animations.stop(null, true);
 //		}
 		
-		if (f.body.velocity.x == 0 && f.body.velocity.y == 0) {
+		if (f.body.velocity.x === 0 && f.body.velocity.y === 0) {
 			f.animations.stop(null, true);
 		} else {
 			
@@ -450,7 +501,6 @@ var init = function () {
 			
 		}
 		
-		
 	}
 	
 	function reset() {
@@ -464,20 +514,20 @@ var init = function () {
 		stopSprite(otherFrog);
 		stopSprite(ball);
 		
-		frog.position.x = 940;
-		frog.position.y = 400;
+		frog.position.x = HOME_START_X;
+		frog.position.y = HOME_START_Y;
 
 		frog.animations.stop(null, true);
         frog.animations.currentAnim = frog.animations.getAnimation("left");
 		
-		otherFrog.position.x = 720;
-		otherFrog.position.y = 400;
+		otherFrog.position.x = OPP_START_X;
+		otherFrog.position.y = OPP_START_Y;
 
 		otherFrog.animations.stop(null, true);
         otherFrog.animations.currentAnim = otherFrog.animations.getAnimation("right");
 
-        ball.position.x = 840;
-        ball.position.y = 400;
+        ball.position.x = BALL_START_X;
+        ball.position.y = BALL_START_Y;
 		
 	}
 
