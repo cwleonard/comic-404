@@ -1,0 +1,62 @@
+{
+    "main": [
+        {
+            "type": "image",
+            "key": "goal",
+            "url": "assets/images/goal.png"
+        },
+        {
+            "type": "image",
+            "key": "goal2",
+            "url": "assets/images/goal2.png"
+        },
+        {
+            "type": "image",
+            "key": "net",
+            "url": "assets/images/net.png"
+        },
+        {
+            "type": "image",
+            "key": "net2",
+            "url": "assets/images/net2.png"
+        },
+        {
+            "type": "image",
+            "key": "tiles",
+            "url": "assets/images/field-tiles.png"
+        },
+        {
+            "type": "spritesheet",
+            "key": "ball",
+            "url": "assets/sprites/ball.png",
+            "frameWidth": 45,
+            "frameHeight": 45
+        },
+        {
+            "type": "spritesheet",
+            "key": "frog",
+            "url": "assets/sprites/frog.png",
+            "frameWidth": 79,
+            "frameHeight": 60
+        },
+        {
+            "type": "spritesheet",
+            "key": "frog2",
+            "url": "assets/sprites/frog2.png",
+            "frameWidth": 79,
+            "frameHeight": 60
+        },
+        {
+            "type": "audio",
+            "key": "whistle",
+            "urls": ["assets/audio/whistle.mp3"]
+        },
+        {
+            "type": "tilemap",
+            "key": "map",
+            "url": "assets/ground.json",
+            "data": null,
+            "format": "TILED_JSON"
+        }
+    ]
+}

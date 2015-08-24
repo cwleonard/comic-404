@@ -24,29 +24,15 @@ var init = function () {
 	var scoreText1;
 	var scoreText2;
 	
-	var images = [
-	              {name: "goal",  type: "png"},
-	              {name: "goal2", type: "png"},
-	              {name: "net",   type: "png"},
-	              {name: "net2",  type: "png"}
-	              ];
+	var mode = WAIT_MODE;
 	
-	var sprites = [
-	               {name: "ball", type: "png", width: 45, height: 45},
-	               {name: "frog", type: "png", width: 79, height: 60},
-	               {name: "frog2", type: "png", width: 79, height: 60}
-	               ];
+	var frog, otherFrog;
+	var ball;
+	var group;
+	var whistle;
 	
-	var audio = [
-	             {name: "whistle", type: "mp3"}
-	             ];
-	
-	var gameAssets = {
-			base: "assets",
-			images: images,
-			sprites: sprites,
-			audio: audio
-	};
+	var cursors;
+	var spacebar;
 	
 	var game = new Phaser.Game(width, height, Phaser.CANVAS, "gameArea", {
 		preload: preload,
@@ -57,36 +43,9 @@ var init = function () {
 
 	function preload() {
 
-		// static images
-		gameAssets.images.forEach(function(o, i, a) {
-			game.load.image(o.name, gameAssets.base + "/images/" + o.name + "." + o.type);
-		});
+		game.load.pack("main", "assets/pack.json");
 		
-		// sprite sheets
-		gameAssets.sprites.forEach(function(o, i, a) {
-			game.load.spritesheet(o.name, gameAssets.base + "/sprites/" + o.name + "." + o.type, o.width, o.height);
-		});
-		
-		// audio
-		gameAssets.audio.forEach(function(o, i, a) {
-			game.load.audio(o.name, gameAssets.base + "/audio/" + o.name + "." + o.type);
-		});
-		
-		// tilemap and tiles
-		game.load.tilemap("map", "assets/images/ground.json", null, Phaser.Tilemap.TILED_JSON);
-		game.load.image("tiles", "assets/images/field-tiles.png");
-
 	}
-	
-	var mode = WAIT_MODE;
-	
-	var frog, otherFrog;
-	var ball;
-	var group;
-	var whistle;
-	
-	var cursors;
-	var spacebar;
 	
 	function create() {
 
