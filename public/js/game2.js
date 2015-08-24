@@ -151,13 +151,28 @@ var init = function () {
 		setAnimation(otherFrog);
 
 		group.sort("bottom", Phaser.Group.SORT_ASCENDING);
+		
+        if (mode === PLAY_MODE && !ball.inPlay()) {
+            tossBall(ball.position.x, ball.position.y);
+        } else if (mode === READY_MODE && ball.inPlay()) {
+            mode = PLAY_MODE;
+        }
+		
 		game.physics.arcade.collide(group, group, function(o1, o2) {
 			
 			if ((o1.name === "goal" && o2 === ball)) {
 				o1.incScore();
 				goal();
 			}
-			
+
+			if (mode === READY_MODE) {
+                if ((o1.name === "frog" && o2 === ball) || (o2.name === "frog" && o1 === ball) ) {
+                    // hit ball before it came back into play! retry!
+                    console.log("foul!");
+                    mode = PLAY_MODE;
+                }
+            }
+
 		});
 		
 		if (mode === PLAY_MODE) {
@@ -165,11 +180,6 @@ var init = function () {
 			game.physics.arcade.moveToXY(otherFrog, coords.x, coords.y, 100);
 		}
 
-		if (mode === PLAY_MODE && !ball.inPlay()) {
-			tossBall(ball.position.x, ball.position.y);
-		} else if (mode === READY_MODE && ball.inPlay()) {
-			mode = PLAY_MODE;
-		}
 
 	}
 	
@@ -188,7 +198,8 @@ var init = function () {
 		
 		var f = grp.create(x, y, ss);
 		game.physics.enable(f, Phaser.Physics.ARCADE);
-        f.body.offset.x = 30;
+		f.name = "frog";
+		f.body.offset.x = 30;
         f.body.offset.y = 20;
         f.body.drag.set(350);
         f.body.setSize(60, 25, 9, 35);
@@ -361,6 +372,8 @@ var init = function () {
 	
 	function tossBall(x, y) {
 
+	    game.time.events.removeAll();
+	    
 		whistle.play();
 
 		mode = TOSS_MODE;
