@@ -411,9 +411,16 @@ var init = function () {
 			
 			mode = READY_MODE;
 			
-			game.time.events.add(1000, function() {
-				toss(x, y);
-			}, this);
+			// the ball could have come back in play in between
+			// these two events, if the frog stands in the corner
+			// and bounces it back out twice in a row. checking
+			// here to see if the ball is not in play prevents
+			// an endless loop of toss-ins.
+			if (!ball.inPlay()) {
+			    game.time.events.add(1000, function() {
+			        toss(x, y);
+			    }, this);
+			}
 			
 		}, this);
 		
